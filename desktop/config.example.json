@@ -1,0 +1,8 @@
+{
+  "api_base_url": "https://your-app-name.onrender.com",
+  "token": "paste-jwt-token-from-web-login",
+  "poll_interval_seconds": 10,
+  "enforce_blocking": true,
+  "warning_sound": true
+}
+

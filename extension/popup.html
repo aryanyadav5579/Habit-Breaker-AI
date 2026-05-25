@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Habit Breaker AI</title>
+  </head>
+  <body class="popup">
+    <!-- Header -->
+    <header>
+      <div class="logo">HB</div>
+      <div>
+        <h1>Habit Breaker AI</h1>
+        <p id="status" class="status-text">Checking connection...</p>
+      </div>
+    </header>
+
+    <!-- Live stats bar -->
+    <div class="stats-bar" id="statsBar" style="display:none">
+      <div class="stat-item">
+        <span id="lastDomain" class="stat-value">—</span>
+        <span class="stat-label">Current site</span>
+      </div>
+      <div class="stat-item">
+        <span id="queuedLogs" class="stat-value">0</span>
+        <span class="stat-label">Queued logs</span>
+      </div>
+      <div class="stat-item">
+        <span id="idleState" class="stat-value">active</span>
+        <span class="stat-label">Idle state</span>
+      </div>
+    </div>
+
+    <!-- Login form (shown when not authenticated) -->
+    <section id="loginSection">
+      <label>
+        Backend URL
+        <input id="apiBaseUrl" type="url" placeholder="https://habitbreaker.onrender.com" />
+      </label>
+      <label>
+        Email
+        <input id="email" type="email" placeholder="your@email.com" />
+      </label>
+      <label>
+        Password
+        <input id="password" type="password" placeholder="Password" />
+      </label>
+      <button id="login">Login & connect</button>
+    </section>
+
+    <!-- Authenticated section -->
+    <section id="authSection" style="display:none">
+      <div class="grid">
+        <button id="sync" class="secondary">↻ Sync settings</button>
+        <button id="logout" class="secondary danger">Logout</button>
+      </div>
+      <button id="track" class="secondary full">📍 Track active tab</button>
+      <button id="focus" class="secondary full" id="focusToggle">▶ Start 50m focus</button>
+    </section>
+
+    <!-- Policy snapshot -->
+    <section>
+      <h2>Policy snapshot</h2>
+      <p id="policy">Not synced yet.</p>
+    </section>
+
+    <div id="message" class="message" style="display:none"></div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

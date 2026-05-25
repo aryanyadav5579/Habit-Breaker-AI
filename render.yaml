@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: habit-breaker-ai-api
+    env: docker
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: ENVIRONMENT
+        value: production
+      - key: FORCE_HTTPS
+        value: true
+      - key: COOKIE_SECURE
+        value: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: habit-breaker-ai-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEFAULT_ADMIN_EMAIL
+        value: admin@habitbreaker.ai
+      - key: DEFAULT_ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://your-vercel-app.vercel.app,https://your-app-name.onrender.com
+      - key: RENDER_BACKEND_URL
+        value: https://your-app-name.onrender.com
+
+databases:
+  - name: habit-breaker-ai-db
+    databaseName: habitbreaker
+    user: habitbreaker
+    plan: starter

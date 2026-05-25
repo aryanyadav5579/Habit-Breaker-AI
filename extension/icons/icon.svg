@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Habit Breaker AI">
+  <rect width="128" height="128" rx="24" fill="#07111f"/>
+  <path d="M34 68c0-18 12-32 30-32s30 14 30 32-12 32-30 32-30-14-30-32Z" fill="#2dd4bf"/>
+  <path d="M47 69h34M64 52v34" stroke="#07111f" stroke-width="10" stroke-linecap="round"/>
+  <path d="M27 25h74v14H27z" fill="#f59e0b"/>
+</svg>
+

@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Habit Breaker AI",
+  "version": "1.1.0",
+  "description": "AI productivity monitoring, distraction detection, safe browsing, website blocking, and realtime focus alerts.",
+  "permissions": [
+    "alarms",
+    "activeTab",
+    "idle",
+    "notifications",
+    "scripting",
+    "storage",
+    "tabs",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "http://localhost:10000/*",
+    "http://127.0.0.1:10000/*",
+    "https://habitbreaker.onrender.com/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Habit Breaker AI",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["warning.html", "warning.js", "styles.css"],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ]
+}

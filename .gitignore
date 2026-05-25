@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+node_modules/
+dist/
+.env
+*.db
+*.sqlite3
+frontend/dist/
+desktop/config.json
+backend/users.db
+backend/static/chart.png
+model/lstm_model.h5
+model/scaler.pkl
+model/model.pkl

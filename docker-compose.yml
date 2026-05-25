@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: habitbreaker
+      POSTGRES_USER: habitbreaker
+      POSTGRES_PASSWORD: habitbreaker
+    ports:
+      - "5432:5432"
+    volumes:
+      - habitbreaker-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U habitbreaker -d habitbreaker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    environment:
+      PORT: 10000
+      ENVIRONMENT: development
+      SECRET_KEY: dev-change-me
+      DATABASE_URL: postgresql+psycopg://habitbreaker:habitbreaker@postgres:5432/habitbreaker
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:10000
+      DEFAULT_ADMIN_EMAIL: admin@habitbreaker.ai
+      DEFAULT_ADMIN_PASSWORD: ChangeMe123!
+      RENDER_BACKEND_URL: http://127.0.0.1:10000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "10000:10000"
+
+volumes:
+  habitbreaker-postgres:
+
