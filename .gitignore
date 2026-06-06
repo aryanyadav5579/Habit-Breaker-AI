@@ -13,3 +13,9 @@ backend/static/chart.png
 model/lstm_model.h5
 model/scaler.pkl
 model/model.pkl
+
+# Large binary / media files (host separately — YouTube, Drive, etc.)
+*.mp4
+*.mov
+*.avi
+assets/demo/
