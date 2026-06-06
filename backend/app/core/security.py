@@ -13,11 +13,13 @@ ALGORITHM = "HS256"
 
 
 def verify_password(plain_password: str, password_hash: str) -> bool:
-    return pwd_context.verify(plain_password, password_hash)
+    # bcrypt silently truncates at 72 bytes; newer passlib raises ValueError
+    # — truncate explicitly to keep behaviour predictable.
+    return pwd_context.verify(plain_password[:72], password_hash)
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return pwd_context.hash(password[:72])
 
 
 def create_access_token(subject: str, extra_claims: Optional[Dict[str, Any]] = None) -> str:
@@ -40,9 +42,9 @@ def create_csrf_token() -> str:
 
 
 def hash_reset_token(token: str) -> str:
-    return pwd_context.hash(token)
+    return pwd_context.hash(token[:72])
 
 
 def verify_reset_token(token: str, token_hash: str) -> bool:
-    return pwd_context.verify(token, token_hash)
+    return pwd_context.verify(token[:72], token_hash)
 
