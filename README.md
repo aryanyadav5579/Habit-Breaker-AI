@@ -180,170 +180,175 @@ The demonstration video covers:
 
 ## 📸 Product Showcase
 
-### 📊 Dashboard Overview
+> 🟢 **All screenshots below are real — taken directly from the running Habit Breaker AI application on localhost.**  
+> No mockups. No Figma designs. No AI-generated UI replacements. This is the actual working software.
 
-![Habit Breaker AI Dashboard](assets/screenshots/dashboard.png)
+---
 
-*Central command center — productivity score, focus tracking, streak monitoring, burnout detection, and live activity feed.*
+### 📊 Dashboard — Command Center
 
-**User Value:** One glance tells you exactly how focused your day has been, whether you are burning out, and what the AI thinks you should do differently. The live WebSocket feed means you always see the most current information without refreshing.
+![Habit Breaker AI — Real Dashboard Screenshot](assets/screenshots/real-dashboard.png)
 
-**Business Value:** High-engagement central hub drives daily habit — users return to check their score the same way they check a fitness tracker.
+*Real screenshot: The main dashboard running live at `http://localhost:5173/dashboard`. Shows COMMAND CENTER header, realtime burnout risk badge (medium), 4 metric cards, weekly trend chart, AI insight panel, recent activity feed, and live alert stream.*
 
-**Key Capabilities:**
+**User Value:** One glance tells you exactly how focused your day has been, whether you are burning out, and what the AI recommends right now. The WebSocket connection means data updates in milliseconds — not on page refresh.
+
+**Technical Highlights:**
 - `Productivity Score` — AI-weighted composite of productive vs total active time
-- `Streak Badge` — consecutive days meeting your daily focus goal
-- `Burnout Risk` — real-time fatigue indicator (Low / Medium / High)
-- `Goal Progress Bar` — focus hours vs daily target
-- `Live Activity Feed` — last 8 classified events with productive/distracting/neutral badges
-- `WebSocket Alert Stream` — real-time distraction alerts pushed by the server
+- `Focus Hours` — accumulated focused time from completed sessions (last 7 days)
+- `Distractions` — real-time detected distraction event counter
+- `Screen Time` — total tracked usage from both browser and desktop agents
+- `Weekly Trend Chart` — Recharts line graph auto-populated from activity logs
+- `AI Insights Panel` — contextual advice from `insight_from_logs()` in `services/ai.py`
+- `Live Activity Feed` — last 8 classified events with domain, app, and category
+- `Live Alerts Stream` — WebSocket-pushed distraction alerts with "New" badge
 
 ---
 
-### 📈 Analytics & Insights
+### 📈 Analytics — Productivity Intelligence
 
-![Analytics Dashboard](assets/screenshots/analytics.png)
+![Habit Breaker AI — Analytics Header](assets/screenshots/real-analytics.png)
 
-*Deep-dive productivity intelligence — hourly heatmaps, daily trends, top site rankings, and AI-generated recommendations.*
+*Real screenshot: Analytics page at `/analytics`. Shows AI Score, Focus Streak, Top Risks, App Signals metric cards. Burnout alert ("Moderate screen fatigue — 42% score"). Daily trend chart rendering three-line activity breakdown (Productive / Distracting / Neutral). Date range selector active.*
 
-**User Value:** Patterns invisible to daily attention become obvious over a 30-day lens. Users discover their most productive hours, their worst distraction triggers, and receive personalised advice grounded in their own behavioural data.
+![Habit Breaker AI — Activity Heatmap & Top Sites](assets/screenshots/real-analytics-heatmap.png)
 
-**Business Value:** Rich analytics create platform stickiness — the longer a user stays, the more personalised and valuable the insights become.
+*Real screenshot: Analytics page continued — 7×24 activity heatmap with day/hour grid, and horizontal bar chart for Top Distracting Websites (youtube.com ranked highest).*
 
-**Key Capabilities:**
-- `7×24 Activity Heatmap` — hourly intensity grid across all weekdays
-- `Daily Trend Chart` — three-line chart (productive / distracting / neutral minutes)
-- `Top Distracting Domains` — horizontal bar chart, ranked by cumulative time
-- `Top Productive Apps` — ranked application productivity usage
-- `Burnout Alert Panel` — appears when burnout risk exceeds 30%
-- `Period Selector` — switch between 7, 30, and 90-day analysis windows
-- `AI Insights Grid` — three contextual recommendations from `insight_from_logs()`
+**User Value:** Patterns invisible to daily attention become obvious over a 30-day lens. Users discover their peak productive hours, worst distraction triggers, and receive personalised advice grounded in their own behavioural data.
 
----
-
-### 🎯 Focus Mode
-
-![Focus Mode](assets/screenshots/focus-mode.png)
-
-*Timed, enforced deep work sessions with Pomodoro support, real-time progress, and session history.*
-
-**User Value:** A focus session does more than count down — it actively enforces your intent. The extension warns you when you visit distracting sites. The desktop agent terminates blocked applications. The session records every distraction so you can review your focus quality afterward.
-
-**Business Value:** Focus sessions are the platform's core engagement loop — each completed session reinforces the habit, adds to the analytics dataset, and improves the AI model.
-
-**Key Capabilities:**
-- `SVG Countdown Ring` — smooth circular progress arc with time remaining
-- `Pomodoro Mode` — 25-minute focused work with structured break scheduling
-- `Duration Slider` — configurable from 15 to 180 minutes
-- `Live Distraction Count` — increments in real time as the extension catches diversions
-- `Progress Percentage` — time elapsed vs total session duration
-- `Session History` — last 5 sessions with start time, duration, and AI quality score
-- `Enforcement Checklist` — visual confirmation that blocking is active
+**Technical Highlights:**
+- `Daily Trend Chart` — three-line Recharts area/line chart (productive / distracting / neutral minutes per day)
+- `7×24 Activity Heatmap` — CSS grid heatmap showing hourly intensity across Mon–Sun
+- `Top Distracting Websites` — horizontal bar chart ranked by cumulative tracked time
+- `Burnout Alert Banner` — appears when `burnout_score()` exceeds 30% threshold
+- `Moderate Screen Fatigue Detection` — 42% burnout score triggering advisory
+- `AI Score Card` — period-average productivity percentage from Random Forest classifier
+- `Period Selector` — `Last 30 days` dropdown for 7 / 30 / 90-day analysis windows
 
 ---
 
-### 👨‍👩‍👧 Parent Control Center
+### 🎯 Focus Mode — Enforced Deep Work
 
-![Parent Control Panel](assets/screenshots/parent-panel.png)
+![Habit Breaker AI — Focus Mode Active Session](assets/screenshots/real-focus-mode.png)
 
-*Complete family digital wellness management — create child accounts, monitor activity, enforce study schedules, and respond to alerts.*
+*Real screenshot: Focus Mode page at `/focus`. Active session shown with SVG countdown ring at 00:00. Live stats sidebar showing 30 distractions detected, 100% session progress, elapsed time 25858m 5s. Active Enforcement checklist with 4 active rules. "Stop session" button visible.*
 
-**User Value:** Parents get genuine visibility without invasive surveillance — a summary of how time was spent, not a keystroke log. One-click study mode applies a sensible restriction profile without manual configuration of dozens of settings.
+**User Value:** A focus session does more than count down — it actively enforces your intent. The Chrome Extension warns you on distracting sites. The desktop agent terminates blocked apps. Every distraction is logged for post-session review.
 
-**Business Value:** Family account structures drive multi-user household adoption — one parent account converts to 2–4 platform users.
-
-**Key Capabilities:**
-- `Child Account Creation` — name, email, temporary password, instant linking
-- `Activity Viewer` — last 10 classified events per child, expandable on click
-- `Study Mode` — one-click restriction profile applying category limits + site blocks
-- `Unread Alert Display` — child distraction alerts surfaced to parent in real time
-- `Per-Child Policy Cards` — summary of restrictions, bedtime, and daily limits
-- `Linked Children List` — manage multiple children from single parent account
-
----
-
-### 🧩 Chrome Extension
-
-![Chrome Extension Popup](assets/screenshots/extension.png)
-
-*Browser-native monitoring agent — tab tracking, focus mode enforcement, offline queuing, and instant policy sync.*
-
-**User Value:** Works invisibly in the background. Users only notice it when a focus session is active and they try to visit a blocked site — exactly when they need the reminder most.
-
-**Business Value:** The extension is the primary activity data collection point — without it, the AI has no training signal from browser behaviour.
-
-**Key Capabilities:**
-- `Persistent Service Worker` — Manifest V3 background agent, survives browser restarts
-- `Live Stats Bar` — current domain, queued event count, idle state
-- `Focus Mode Toggle` — activates stricter enforcement across all open tabs
-- `Offline Queue` — 50-event buffer; flushes automatically on reconnect
-- `Retry Logic` — 3-attempt exponential backoff for all API calls
-- `401 Detection` — expired token triggers desktop notification + credential clear
-- `5-Minute Policy Sync` — block lists and settings refreshed via `chrome.alarms`
+**Technical Highlights:**
+- `SVG Circular Progress Ring` — smooth arc animation rendering time remaining
+- `Live Distraction Counter` — increments via WebSocket as extension catches diversions (30 shown)
+- `Session Progress Percentage` — elapsed / total session duration (100%)
+- `Duration Config` — 50-minute session with "Policy aware" blocking mode
+- `Warning Mode` — Browser + desktop enforcement both active
+- `Active Enforcement Checklist` — Warn on distracting sites / Return to work context / Send parent alert / Update realtime stream
+- `Stop Session Button` — gracefully closes session and persists final score
 
 ---
 
-### 🖥️ Desktop Monitoring Agent
+### ⚙️ Settings — Productivity Rules Engine
 
-![Desktop Monitor Terminal](assets/screenshots/desktop-monitor.png)
+![Habit Breaker AI — Settings Customisation](assets/screenshots/real-settings.png)
 
-*OS-level background agent — active window tracking, idle detection, app enforcement, and daily summary logging.*
+*Real screenshot: Settings page at `/settings`. Shows two-column tag grid for Productive Websites (5 entries: chat.openai.com, docs.google.com, github.com, notion.so, stackoverflow.com) and Distracting Websites (7 entries: facebook.com, instagram.com, netflix.com, reddit.com, tiktok.com, x.com, youtube.com). Productive desktop apps and distracting desktop apps sections. Focus & safety controls with sensitivity slider at 0.65.*
 
-**User Value:** Captures the full picture of desktop application usage that the browser extension cannot see — IDEs, design tools, games, communication apps. Together, browser + desktop data gives a truly complete productivity picture.
+![Habit Breaker AI — Schedule & Limits](assets/screenshots/real-settings-schedule.png)
 
-**Business Value:** Desktop monitoring differentiates the platform from browser-only tools and enables enforcement at the OS process level — which no browser extension can do.
+*Real screenshot: Settings page continued — Work schedule (09:00–17:30), Bedtime schedule (lock 21:30, unlock 06:30), Daily limits per category (Social media: 45m, Video streaming: 30m, Games: 0m), Alert sound selector set to "Soft bell", Save settings button.*
 
-**Key Capabilities:**
-- `Active Window Capture` — foreground process identification via `win32gui` + `psutil`
-- `Idle Detection` — `GetLastInputInfo` measures true keyboard/mouse inactivity
-- `App Switch Frequency` — measures context-switching rate as a distraction signal
-- `Blocked App Enforcement` — terminates blocked processes when detected during focus
-- `Bedtime Lock` — refuses to sync/activate outside configured hours
-- `Offline Queue` — 200-event local buffer with auto-flush
-- `Daily Summary JSON` — written to `~/.habitbreaker/logs/summary_YYYY-MM-DD.json`
-- `CLI Flags` — `--dry-run`, `--login`, `--api` for flexible operation
+**User Value:** Full control over what counts as productive or distracting — for websites AND desktop apps. Sync happens instantly to the Chrome Extension and Desktop Monitor when settings are saved.
 
----
-
-### 📑 Weekly Intelligence Reports
-
-![Weekly Reports](assets/screenshots/reports.png)
-
-*AI-generated weekly productivity digest — streak tracking, burnout assessment, trend visualisation, and personalised recommendations.*
-
-**User Value:** A weekly report creates a natural reflection ritual. Instead of raw numbers, users receive an intelligible narrative about their week's performance with five actionable steps.
-
-**Business Value:** Weekly reports are a re-engagement mechanism — they bring inactive users back to the platform and demonstrate ongoing value.
-
-**Key Capabilities:**
-- `Streak Card` — consecutive goal-meeting days with flame visual
-- `Burnout Risk Card` — colour-coded risk level (green / amber / red)
-- `Weekly Area Chart` — productive vs distracting trend over 7 days
-- `AI Recommendations` — five personalised improvement suggestions from `insight_from_logs()`
-- `PDF Export` — `window.print()` formatted report for sharing or archiving
+**Technical Highlights:**
+- `Tag-based site lists` — add/remove domains with `+` button; syncs to `PATCH /api/settings`
+- `Productive/Distracting App Tags` — desktop exe names (Code.exe, pycharm64.exe, Discord.exe, Steam.exe)
+- `Distraction Sensitivity Slider` — 0–1 float controlling classifier threshold (0.65 = balanced)
+- `Enable Website/App Blocking` — toggles redirect enforcement on distracting domains
+- `Child-Safe Mode` — activates stricter distraction scoring for linked child accounts
+- `Work Schedule` — defines hours when productivity tracking is active
+- `Bedtime Schedule` — locks device/browser access outside defined hours
+- `Daily Category Limits` — per-category minute caps with range sliders (Social, Video, Games)
+- `Alert Sound` — configurable notification sound for distraction events
 
 ---
 
-### 🛡️ Admin Dashboard
+### 👨‍👩‍👧 Parent Control Center — Family Monitoring
 
-![Admin Panel](assets/screenshots/admin-panel.png)
+![Habit Breaker AI — Parent Panel](assets/screenshots/real-parent-panel.png)
 
-*Platform-wide system administration — user management, system health metrics, role control, and account moderation.*
+*Real screenshot: Parent Panel at `/parent`. Shows "Family monitoring dashboard" header with PARENT CONTROL label. Add child account form (4 fields: Child full name, Child email address, Display name/nickname, Temporary password) with teal "Create child account" button. Linked children panel showing empty state with shield icon.*
 
-**User Value (Operators):** Complete oversight of the platform — see every registered user, their role, account status, and activity at a glance. Disable compromised accounts instantly.
+**User Value:** Parents get genuine visibility without invasive surveillance. A simple form creates a fully restricted child account instantly. Study mode applies a sensible restriction profile — no manual configuration of dozens of settings required.
 
-**Business Value:** Admin tooling is a prerequisite for operating the platform at any meaningful scale — it removes the need for direct database access for routine operations.
-
-**Key Capabilities:**
-- `5 System KPI Cards` — total users, linked children, activity logs, active alerts, focus sessions
-- `Full User Table` — name, email, role badge (colour-coded), joined date, status
-- `Role Badges` — admin (purple), parent (blue), user (teal), child (grey)
-- `Account Toggle` — enable / disable user via `PATCH /api/admin/users/{id}/toggle`
-- `Live Refresh` — pull latest system state without page reload
+**Technical Highlights:**
+- `Child Account Creation Form` — name, email, display name, temporary password → `POST /api/parent/child`
+- `Realtime Link` — child account immediately attached to parent via `parent_id` FK in database
+- `Linked Children List` — each card shows activity summary, restrictions, bedtime
+- `Study Mode Toggle` — one-click policy preset applying category limits + blocked site enforcement
+- `Unread Alert Badge` — real-time child distraction alerts surfaced to parent
+- `Role Enforcement` — parent endpoints protected by RBAC dependency in FastAPI
 
 ---
+
+### 🛡️ Child Dashboard — Study-Safe Focus View
+
+![Habit Breaker AI — Child Dashboard](assets/screenshots/real-child-view.png)
+
+*Real screenshot: Child View at `/child`. Shows "Study-safe focus view" header with CHILD DASHBOARD label. 4 metric cards: Safety Mode (Active — parent policy), Study Score (0% today), Focus Time (0h tracked), Warnings (0 today). Today's study goal progress bar. Active restrictions: Study window 09:00–17:30, Social media limit: 45 min. Study guidance panel. Blocked sites shown: facebook.com, instagram.com, netflix.com, reddit.com, tiktok.com, x.com, youtube.com.*
+
+**User Value:** Children see a clean, goal-oriented interface — not a locked-down device. They understand what is restricted and why, which reduces conflict and encourages self-regulation.
+
+**Technical Highlights:**
+- `Safety Mode Card` — shows active parent policy enforcement status
+- `Study Score` — child-specific productivity metric (study-context weighted)
+- `Active Restrictions Panel` — lists currently enforced rules from parent settings
+- `Study Window Display` — shows allowed usage hours (09:00–17:30)
+- `Social Media Limit` — remaining daily allowance shown prominently (45 min cap)
+- `Blocked Sites Tags` — visual list of all domains blocked by parent policy
+- `Study Guidance Panel` — AI recommendations adapted for child context
+- `Child-Safe Design` — simplified UI, no admin/analytics clutter
+
+---
+
+### 📑 Weekly Intelligence Report
+
+![Habit Breaker AI — Weekly Reports](assets/screenshots/real-reports.png)
+
+*Real screenshot: Reports page at `/reports`. Shows "Weekly Productivity Intelligence Report" with Export PDF button. Report generated timestamp (12/6/2026, 4:45:04 am). 4 metric cards: Productivity Score (0%), Focus Hours (0h), Distractions (0), Screen Time (0h). Focus Streak card (0 days) and Burnout Risk card (Medium — 42% risk score). AI Recommendations section with 2 contextual suggestions.*
+
+**User Value:** A weekly report creates a natural reflection ritual. Instead of raw numbers, users receive readable summaries about their week's performance with actionable steps from the AI engine.
+
+**Technical Highlights:**
+- `Report Generation Timestamp` — exact datetime when weekly analysis was computed
+- `Burnout Risk Score` — `Medium` at 42% shown with amber color-coding
+- `Focus Streak Counter` — consecutive goal-achievement days with flame icon
+- `PDF Export Button` — triggers `window.print()` with print-optimised CSS layout
+- `AI Recommendations` — personalised improvement suggestions from `insight_from_logs()`
+- `4 Core Metric Cards` — same KPI grid as dashboard for consistent weekly baseline
+
+---
+
+### 🛡️ Admin Dashboard — System Management
+
+![Habit Breaker AI — Admin Panel](assets/screenshots/real-admin.png)
+
+*Real screenshot: Admin Panel at `/admin`. Shows "System activity and user management" with Refresh button. 5 KPI cards: Users (1 registered), Children (0 linked accounts), Activity Logs (30 tracked events), Open Alerts (30 needs review), Focus Sessions (4 completed). Platform users table showing: Habit Breaker Admin / admin@habitbreaker.ai / admin role badge / joined 21/5/2026 / Active status / Disable action.*
+
+**User Value (Operators):** Complete oversight of the platform — see every registered user, their role, account status, and system health metrics. Disable compromised accounts instantly without database access.
+
+**Technical Highlights:**
+- `5 System KPI Cards` — Users, Children, Activity Logs (30 events), Open Alerts (30), Focus Sessions (4)
+- `Full User Table` — name, email, role badge (colour-coded), joined date, status, actions
+- `Role Badge Rendering` — `admin` shown in red badge, `parent`/`user`/`child` colour-coded
+- `Account Toggle` — enable / disable via `PATCH /api/admin/users/{id}/toggle`
+- `Live Refresh Button` — pulls latest system state without page reload
+- `Admin-only RBAC` — endpoint protected by `require_admin` dependency injection
+
+---
+
 
 ## 🏗️ System Architecture
+
 
 > **Habit Breaker AI** follows a **Modular Monolith with Service Layer Architecture** — clean separation of concerns at every layer, designed to evolve into microservices as scale demands.
 
