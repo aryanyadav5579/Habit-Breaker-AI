@@ -744,91 +744,438 @@ habit-breaker1/
 │  │  🚀 CORE APPLICATIONS                                       │
 │  └─────────────────────────────────────────────────────────────┘
 │
-├── 📂 backend/
-│   ├── 🐍 app.py                  Uvicorn entry point
-│   ├── 🗄️ users.db               SQLite dev database
-│   └── 📂 app/
-│       ├── ⚙️ main.py             App factory + middleware stack
+├── 📂 backend/                    ← FastAPI Application Root
+│   │   Purpose: Entire server-side application — API, auth,
+│   │            AI services, database, realtime, and business logic
+│   │
+│   ├── 🐍 app.py                  Entry point — Uvicorn server binding
+│   │                              Reads PORT from env, enables reload
+│   │                              in development mode
+│   │
+│   ├── 🗄️ users.db               SQLite database (local development)
+│   │                              Auto-created on first startup.
+│   │                              Swap for PostgreSQL via DATABASE_URL.
+│   │
+│   └── 📂 app/                    Application package
+│       │
+│       ├── ⚙️ main.py             FastAPI app factory
+│       │                          • CORSMiddleware (configurable origins)
+│       │                          • CSRF validation middleware
+│       │                          • Rate limiting middleware
+│       │                          • Request logging middleware
+│       │                          • TrustedHostMiddleware
+│       │                          • Admin account seeding on startup
+│       │                          • Static file serving
+│       │                          • Router mount at /api prefix
+│       │
 │       ├── 📊 models.py           SQLAlchemy ORM table definitions
+│       │                          Models: User, UserSettings, ActivityLog,
+│       │                          FocusSession, Alert, AIPrediction,
+│       │                          ProductivityScore, BlockedWebsite,
+│       │                          BlockedApp, ChildAccount,
+│       │                          PasswordResetToken
+│       │
 │       ├── 📋 schemas.py          Pydantic v2 request/response schemas
+│       │                          All API input validation and output
+│       │                          serialisation contracts defined here
+│       │
 │       ├── 📡 ws.py               WebSocket re-export shim
-│       ├── 📂 api/
-│       │   ├── 🌐 routes.py       All API endpoints (~845 lines)
-│       │   ├── 🔒 deps.py         FastAPI dependency injection + RBAC
-│       │   ├── ⬜ activity.py     Legacy shim
-│       │   ├── ⬜ extension.py    Legacy shim
-│       │   └── 📈 dashboard.py    Supplemental analytics utilities
-│       ├── 📂 core/
-│       │   ├── ⚙️ config.py       Pydantic Settings — env var management
-│       │   └── 🔐 security.py     JWT, bcrypt, CSRF primitives
-│       ├── 📂 db/
-│       │   └── 🗄️ session.py     Engine + session factory
-│       └── 📂 services/
-│           ├── 🧠 ai.py           ML classification + burnout + streak
-│           ├── 🔤 classifier.py   Keyword classifier fallback
-│           └── 📡 realtime.py     WebSocket connection manager
+│       │                          Maintains import compatibility while
+│       │                          actual logic lives in services/realtime.py
+│       │
+│       ├── 📂 api/                HTTP Route Handlers
+│       │   │   Architectural role: Thin controller layer — validates
+│       │   │   requests, delegates to services, returns responses.
+│       │   │   No business logic lives here directly.
+│       │   │
+│       │   ├── 🌐 routes.py       Central API authority (~845 lines)
+│       │   │                      All production endpoints:
+│       │   │                      AUTH: register, login, logout, me,
+│       │   │                            forgot-password, reset-password
+│       │   │                      SETTINGS: get/update (own + admin)
+│       │   │                      ACTIVITY: log, recent
+│       │   │                      ANALYTICS: summary, streak
+│       │   │                      FOCUS: start, stop, current
+│       │   │                      ALERTS: list, acknowledge
+│       │   │                      BLOCKING: add/remove/list websites+apps
+│       │   │                      PARENT: create-child, list, activity
+│       │   │                      REPORTS: weekly
+│       │   │                      EXTENSION: bootstrap sync
+│       │   │                      ADMIN: users, system stats, toggle
+│       │   │                      WS: /api/ws/dashboard
+│       │   │
+│       │   ├── 🔒 deps.py         FastAPI dependency injection
+│       │   │                      get_current_user() — JWT decode + DB lookup
+│       │   │                      require_roles() — RBAC enforcement
+│       │   │                      can_manage_user() — parent/admin check
+│       │   │
+│       │   ├── ⬜ activity.py     Minimal shim (legacy compatibility)
+│       │   │                      Activity logging fully handled in routes.py
+│       │   │
+│       │   ├── ⬜ extension.py    Minimal shim (legacy compatibility)
+│       │   │                      Extension bootstrap handled in routes.py
+│       │   │
+│       │   └── 📈 dashboard.py    Legacy analytics helper utilities
+│       │                          Supplemental aggregation functions
+│       │
+│       ├── 📂 core/               Cross-Cutting Infrastructure
+│       │   │   Architectural role: Shared utilities used across all
+│       │   │   layers — config, security primitives, no domain logic.
+│       │   │
+│       │   ├── ⚙️ config.py       Pydantic BaseSettings
+│       │   │                      All configuration via environment vars:
+│       │   │                      SECRET_KEY, DATABASE_URL, CORS_ORIGINS,
+│       │   │                      ACCESS_TOKEN_EXPIRE_MINUTES,
+│       │   │                      DEFAULT_ADMIN_EMAIL/PASSWORD
+│       │   │
+│       │   └── 🔐 security.py     Cryptographic primitives
+│       │                          verify_password() — bcrypt verify (72-byte safe)
+│       │                          get_password_hash() — bcrypt hash
+│       │                          create_access_token() — signed JWT (HS256)
+│       │                          decode_access_token() — JWT verification
+│       │                          create_csrf_token() — UUID hex token
+│       │                          hash/verify_reset_token() — password reset
+│       │
+│       ├── 📂 db/                 Database Infrastructure
+│       │   │   Architectural role: Engine configuration and session
+│       │   │   lifecycle. All DB access goes through get_db() dependency.
+│       │   │
+│       │   └── 🗄️ session.py     SQLAlchemy engine + session factory
+│       │                          Supports SQLite (local) and PostgreSQL
+│       │                          (production) via DATABASE_URL switching
+│       │
+│       └── 📂 services/           Business Logic & AI Services
+│           │   Architectural role: All domain intelligence lives here.
+│           │   Routes call services; services are independently testable.
+│           │
+│           ├── 🧠 ai.py           ML Classification Service (~500 lines)
+│           │                      PRODUCTIVE_DEFAULTS — curated domain list
+│           │                      DISTRACTING_DEFAULTS — curated domain list
+│           │                      extract_domain() — URL normalisation
+│           │                      classify_activity() — rule + ML pipeline
+│           │                      refine_probability_with_random_forest()
+│           │                        Per-user RF model with TTL cache
+│           │                        Thread-safe _USER_MODEL_CACHE
+│           │                        Falls back to model.pkl for new users
+│           │                      burnout_score() — fatigue risk (0.0–1.0)
+│           │                      compute_streak() — consecutive goal days
+│           │                      insight_from_logs() — AI text generation
+│           │
+│           ├── 🔤 classifier.py   Lightweight keyword classifier
+│           │                      Standalone fallback for edge cases
+│           │                      when RF model is unavailable
+│           │
+│           └── 📡 realtime.py     WebSocket Connection Manager
+│                                  ConnectionManager class
+│                                  Per-user room management (dict of lists)
+│                                  connect() / disconnect() / broadcast()
+│                                  broadcast_to_user() — targeted push
 │
-├── 📂 frontend/
-│   ├── ⚙️ vite.config.js         Dev server + API proxy config
-│   ├── 🎨 tailwind.config.js     Custom design tokens
+├── 📂 frontend/                   ← React Web Application
+│   │   Purpose: Single-page application serving the full user-facing
+│   │            dashboard, analytics, focus tools, and admin panels.
+│   │
+│   ├── 📄 index.html              Vite HTML shell — single div#root mount
+│   ├── ⚙️ vite.config.js         Dev server config: React plugin,
+│   │                              API proxy → localhost:10000,
+│   │                              host binding for network access
+│   ├── 🎨 tailwind.config.js     Design token definitions
+│   │                              Colors: ink (#07111f), panel (#101c2f),
+│   │                              line (#26364d), mint (#2dd4bf),
+│   │                              leaf (#22c55e), sun (#f59e0b),
+│   │                              danger (#ef4444)
+│   │                              Custom shadows and animation keyframes
+│   ├── ⚙️ postcss.config.js      PostCSS pipeline: Tailwind + Autoprefixer
+│   ├── 🚀 vercel.json            SPA fallback routing for Vercel CDN
+│   ├── 📦 package.json           npm manifest and script definitions
+│   │
 │   └── 📂 src/
-│       ├── 🗺️ App.jsx             Router + auth guards
-│       ├── 📂 api/               HTTP client layer
-│       ├── 📂 components/        Shell + MetricCard
-│       ├── 📂 context/           AuthContext
-│       ├── 📂 hooks/             useRealtime WebSocket hook
-│       ├── 📂 pages/
-│       │   ├── 🏠 Landing.jsx    Public marketing page
-│       │   ├── 🔑 Login.jsx      Auth forms
-│       │   ├── 📊 Dashboard.jsx  Main productivity hub
-│       │   ├── 📈 Analytics.jsx  Heatmap + charts + AI insights
-│       │   ├── ⏱️ FocusMode.jsx  SVG timer + enforcement
-│       │   ├── ⚙️ Settings.jsx   Policy + tag chip inputs
-│       │   ├── 👨‍👩‍👧 ParentPanel.jsx  Child management
-│       │   ├── 🛡️ ChildDashboard.jsx  Child-safe view
-│       │   ├── 📋 Reports.jsx    Weekly AI report
-│       │   └── 👑 AdminPanel.jsx System administration
-│       └── 🎨 styles/index.css   Global design system
+│       ├── ⚛️ main.jsx            React DOM render entry — App → #root
+│       ├── 🗺️ App.jsx             Router configuration
+│       │                          All route definitions
+│       │                          Auth guards (redirect if no token)
+│       │                          Role-based route protection
+│       │                          (admin / parent / child / user)
+│       │
+│       ├── 📂 api/                API Client Layer
+│       │   │   Architectural role: Centralised HTTP communication.
+│       │   │   All fetch calls go through this layer — never raw fetch
+│       │   │   in components.
+│       │   │
+│       │   ├── 🔌 client.js       Axios instance
+│       │   │                      JWT Bearer token injection
+│       │   │                      CSRF header attachment
+│       │   │                      safeGet() — fetch with typed fallback
+│       │   │                      401 interceptor for auto-logout
+│       │   │
+│       │   └── 📊 dashboard.js    Dashboard-specific API helpers
+│       │                          Wraps common dashboard data calls
+│       │
+│       ├── 📂 components/         Shared UI Component Library
+│       │   │   Architectural role: Reusable presentational components
+│       │   │   with no business logic. Props-driven, composable.
+│       │   │
+│       │   ├── 🏠 Shell.jsx       Application shell layout
+│       │   │                      Responsive sidebar navigation
+│       │   │                      Mobile hamburger + backdrop overlay
+│       │   │                      Role-filtered nav items
+│       │   │                      Notification bell (unread count badge)
+│       │   │                      Live pulse dot (realtime indicator)
+│       │   │                      User card + logout
+│       │   │                      Theme toggle
+│       │   │
+│       │   └── 📊 MetricCard.jsx  KPI metric display card
+│       │                          Props: icon, label, value, detail, tone
+│       │                          Tone variants: default/leaf/sun/danger
+│       │
+│       ├── 📂 context/            React State Management
+│       │   └── 🔒 AuthContext.jsx Auth state provider
+│       │                          Stores: user object, token, role
+│       │                          Methods: login(), logout()
+│       │                          Persists session across page refresh
+│       │                          Exposes role helper booleans
+│       │
+│       ├── 📂 hooks/              Custom React Hooks
+│       │   └── 📡 useRealtime.js  WebSocket lifecycle hook
+│       │                          Connects to /api/ws/dashboard?token=
+│       │                          Auto-reconnects on disconnect
+│       │                          Delivers live events to components
+│       │                          Cleans up on unmount
+│       │
+│       ├── 📂 pages/              Route-Level Page Components
+│       │   │   Architectural role: Smart containers — fetch data,
+│       │   │   manage local state, compose presentational components.
+│       │   │
+│       │   ├── 🏠 Landing.jsx     Public marketing page
+│       │   │                      Hero section, feature highlights, CTA
+│       │   │
+│       │   ├── 🔑 Login.jsx       Authentication page
+│       │   │                      Login + Register tabs
+│       │   │                      Role selection (user/parent/admin)
+│       │   │                      Empty form (no pre-filled credentials)
+│       │   │
+│       │   ├── 📊 Dashboard.jsx   Main productivity dashboard
+│       │   │                      Metric cards: score, focus, distractions
+│       │   │                      Streak badge + burnout risk badge
+│       │   │                      Daily goal progress bar
+│       │   │                      Area chart (productive vs distracting)
+│       │   │                      Recent activity live feed
+│       │   │                      WebSocket alert stream
+│       │   │                      Test alert button (development)
+│       │   │
+│       │   ├── 📈 Analytics.jsx   Deep analytics view
+│       │   │                      7×24 activity heatmap grid
+│       │   │                      Line chart: daily trend (all categories)
+│       │   │                      Horizontal bar charts: top sites + apps
+│       │   │                      Burnout risk alert panel (>30% threshold)
+│       │   │                      AI insights grid
+│       │   │                      Period selector: 7/30/90 days
+│       │   │
+│       │   ├── ⏱️ FocusMode.jsx   Focus session manager
+│       │   │                      SVG circular countdown timer ring
+│       │   │                      Pomodoro mode toggle (25 min)
+│       │   │                      Duration slider (15–180 min)
+│       │   │                      Live stats: distractions, progress, elapsed
+│       │   │                      Session history (last 5 sessions)
+│       │   │                      Enforcement feature checklist
+│       │   │
+│       │   ├── ⚙️ Settings.jsx    Configuration management
+│       │   │                      Tag chip input: add/remove websites + apps
+│       │   │                      Work schedule time pickers
+│       │   │                      Bedtime schedule time pickers
+│       │   │                      Daily limit sliders (social/video/games)
+│       │   │                      Distraction sensitivity slider
+│       │   │                      Blocking + child-safe mode toggles
+│       │   │                      Alert sound selector
+│       │   │
+│       │   ├── 👨‍👩‍👧 ParentPanel.jsx  Parental control centre
+│       │   │                      Create child account form
+│       │   │                      Linked children list (click to expand)
+│       │   │                      Per-child activity viewer (last 10 events)
+│       │   │                      Unread child alert display
+│       │   │                      One-click study mode restriction apply
+│       │   │                      Per-child policy summary cards
+│       │   │
+│       │   ├── 🛡️ ChildDashboard.jsx  Child-safe focus view
+│       │   │                      Study goal progress bar
+│       │   │                      Focus streak badge (flame icon)
+│       │   │                      Active restrictions list
+│       │   │                      Blocked site chips
+│       │   │                      AI study guidance panel
+│       │   │
+│       │   ├── 📋 Reports.jsx     Weekly intelligence report
+│       │   │                      Streak card (days count)
+│       │   │                      Burnout risk card (color-coded)
+│       │   │                      Weekly area chart (trend)
+│       │   │                      AI recommendations list
+│       │   │                      PDF export button (window.print)
+│       │   │
+│       │   └── 👑 AdminPanel.jsx  System administration
+│       │                          5 KPI metric cards (users, children,
+│       │                          logs, alerts, focus sessions)
+│       │                          Full user table with role badges
+│       │                          Enable/disable user toggle
+│       │                          Joined date and status columns
+│       │                          System refresh button
+│       │
+│       └── 📂 styles/
+│           └── 🎨 index.css       Global design system
+│                                  Google Fonts Inter import
+│                                  Scrollbar custom styling
+│                                  Tailwind @apply utilities:
+│                                    .surface .button-primary
+│                                    .button-secondary .button-danger
+│                                    .input .nav-link .nav-link-active
+│                                  Badge variants: streak/green/danger
+│                                  .pulse-dot — live indicator animation
+│                                  .animate-fadein — page transitions
+│                                  .card-hover — lift effect
 │
-├── 📂 extension/
-│   ├── 📋 manifest.json          MV3 declaration + permissions
-│   ├── ⚙️ background.js          Service worker (tracking + blocking)
-│   ├── 📄 content.js             Tab metadata injector
-│   ├── 🖥️ popup.html/js/css     Extension popup UI
-│   ├── 🚫 warning.html/js        Blocked site interstitial
-│   └── 📂 icons/                 16/32/48/128px PNG icons
+├── 📂 extension/                  ← Chrome Extension (Manifest V3)
+│   │   Purpose: Browser-native productivity monitoring agent.
+│   │            Runs as a persistent service worker with no page UI.
+│   │
+│   ├── 📋 manifest.json           Extension manifest v3
+│   │                              Permissions: alarms, activeTab, idle,
+│   │                              notifications, scripting, storage,
+│   │                              tabs, webNavigation
+│   │                              Service worker: background.js
+│   │                              Content scripts: content.js (all URLs)
+│   │                              Web-accessible: warning.html
+│   │
+│   ├── ⚙️ background.js          Service worker (persistent agent)
+│   │                              Tab tracking: onActivated + onUpdated
+│   │                              15-second deduplication window
+│   │                              Domain extraction + matching
+│   │                              Blocked site redirect to warning.html
+│   │                              chrome.idle integration (60s threshold)
+│   │                              50-event offline queue + auto-flush
+│   │                              3-attempt exponential retry
+│   │                              401 token expiry → notification + clear
+│   │                              5-min periodic sync via chrome.alarms
+│   │                              Messages: SET_TOKEN, CLEAR_TOKEN,
+│   │                              GET_STATE, SET_FOCUS, SYNC_NOW,
+│   │                              FLUSH_QUEUE
+│   │
+│   ├── 📄 content.js             Content script (injected into all pages)
+│   │                              Sends tab metadata to service worker
+│   │                              Listens for focus mode state changes
+│   │
+│   ├── 🖥️ popup.html             Extension popup layout
+│   │                              Login form section (unauthenticated)
+│   │                              Live stats bar (authenticated)
+│   │                              Auth action section (sync, logout, focus)
+│   │                              Policy snapshot panel
+│   │
+│   ├── ⚙️ popup.js               Popup controller
+│   │                              Login → fetch token → SET_TOKEN message
+│   │                              GET_STATE → display current site/queue
+│   │                              Focus mode toggle → SET_FOCUS message
+│   │                              Sync → SYNC_NOW + re-render policy
+│   │                              Logout → CLEAR_TOKEN + reset UI
+│   │
+│   ├── 🚫 warning.html           Blocked site interstitial page
+│   │                              Displays blocked domain name
+│   │                              Back button + unblock request option
+│   │
+│   ├── ⚙️ warning.js             Warning page controller logic
+│   ├── 🎨 styles.css             Popup + warning page dark-theme styles
+│   │                              Stats bar, toast message, danger button
+│   │
+│   └── 📂 icons/                 Extension icon assets
+│       ├── 🖼️ icon.svg           Source vector icon (HB brain circuit)
+│       ├── 🖼️ icon16.png         16×16 — browser toolbar
+│       ├── 🖼️ icon32.png         32×32 — standard display
+│       ├── 🖼️ icon48.png         48×48 — extensions management page
+│       └── 🖼️ icon128.png        128×128 — Chrome Web Store / install dialog
 │
-├── 📂 desktop/
-│   ├── 🐍 monitor.py             Windows monitoring agent
-│   ├── 📋 config.example.json    Config template
-│   └── 📦 requirements.txt       psutil, pywin32, requests
+├── 📂 desktop/                    ← Windows Desktop Monitoring Agent
+│   │   Purpose: Background system process tracking active applications,
+│   │            idle time, and enforcing usage policies at OS level.
+│   │
+│   ├── 🐍 monitor.py             Main monitoring loop
+│   │                              win32gui foreground window capture
+│   │                              GetLastInputInfo idle time detection
+│   │                              psutil process enumeration (fallback)
+│   │                              App switch frequency measurement
+│   │                              Blocked app process termination
+│   │                              Bedtime lock enforcement
+│   │                              200-event offline queue + flush
+│   │                              Daily JSON summary log writing
+│   │                              CLI: --dry-run, --login, --api flags
+│   │                              Graceful SIGINT/SIGTERM shutdown
+│   │
+│   ├── 📋 config.example.json    Configuration template
+│   │                              Backend URL, auth token placeholder
+│   │                              Poll interval, idle threshold settings
+│   │
+│   ├── 📦 requirements.txt       Desktop-specific Python dependencies
+│   │                              psutil, requests, pywin32
+│   │
+│   └── 📖 README.md              Desktop monitor setup guide
 │
-├── 📂 database/
-│   └── 📊 schema.sql             Full PostgreSQL production schema
+├── 📂 database/                   ← Database Assets
+│   └── 📊 schema.sql             Complete PostgreSQL production schema
+│                                  All tables, indices, foreign keys,
+│                                  and seed data for fresh deployments
 │
-├── 📂 model/
-│   └── 🧠 model.pkl              Pre-trained Random Forest (cold start)
+├── 📂 model/                      ← Pre-trained ML Model
+│   └── 🧠 model.pkl              Serialised Random Forest classifier
+│                                  Used as cold-start fallback for new
+│                                  users with fewer than 30 activity logs.
+│                                  Per-user models replace this once
+│                                  sufficient training data exists.
 │
-├── 📂 assets/                    ← Documentation assets
-│   ├── 📂 screenshots/           Feature screenshots (8 images)
-│   └── 📂 demo/                  demo.mp4 walkthrough video
+├── 📂 data/                       ← Sample & Seed Data
+│   └── (sample activity datasets for testing and model validation)
 │
-│  ┌─────────────────────────────────────────────────────────────┐
-│  │  ☁️ INFRASTRUCTURE                                          │
+├── 📂 dashboard/                  ← Legacy Dashboard (superseded)
+│   └── templates/                 Original Flask/Jinja2 templates
+│                                  Replaced by the React SPA.
+│                                  Retained for reference only.
+
+ ┌─────────────────────────────────────────────────────────────┐
+│  │  ☁️ INFRASTRUCTURE & DEPLOYMENT                             │
 │  └─────────────────────────────────────────────────────────────┘
 │
-├── 🐳 Dockerfile                 Backend container image
-├── 🐳 docker-compose.yml         Backend + PostgreSQL orchestration
+├── 🐳 Dockerfile                 Multi-stage Docker image for backend
+│                                  Python base → pip install → uvicorn run
+│
+├── 🐳 docker-compose.yml         Local orchestration
+│                                  Services: backend + PostgreSQL
+│                                  Volume mounts for DB persistence
+│                                  Environment variable injection
+│
 ├── ☁️ render.yaml                Render Infrastructure-as-Code
-├── 📋 requirements.txt           Backend Python dependencies
+│                                  Web service definition
+│                                  PostgreSQL database add-on
+│                                  Auto-deploy from main branch
+│                                  Environment variable configuration
+│
+
+
+ ┌─────────────────────────────────────────────────────────────┐
+│  │  ⚙️ CONFIGURATION & TOOLING                                 │
+│  └─────────────────────────────────────────────────────────────┘
+│
+├── 📋 requirements.txt           Backend Python dependencies (pinned)
 ├── 🔒 .env.example               Environment variable template
+├── 🙈 .gitignore                 Ignore rules (venv, __pycache__, .env,
+│                                  node_modules, *.db, dist/)
+├── 🖼️ make_icons.py             Extension PNG icon generator utility
+│                                  (requires Pillow)
 ├── 🪟 start.bat                  One-click Windows launcher
-├── 🖼️ make_icons.py             Extension icon generator utility
+│                                  Installs deps → opens backend + frontend
+│                                  in separate terminal windows
+├── 🪟 run_server.bat             Backend-only startup alternative
+├── 🗄️ habit_breaker.db          SQLite dev database (local only, gitignored
+│                                  in production configurations)
 ├── ⚖️ LICENSE                    MIT License
 └── 📖 README.md                  This document
 ```
 
 ---
+
 
 ## 🔐 Security Architecture
 
